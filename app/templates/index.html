@@ -1,0 +1,57 @@
+<!-- app/templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bladder Pressure Data Uploader</title>
+    <!-- Include Plotly.js via CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bladder Pressure Data Uploader</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="file-input" name="file" accept=".csv, .txt" required>
+            <button type="button" id="upload-button">Upload</button>
+        </form>
+
+        <h2>Interactive Graph</h2>
+        <div id="graph"></div>
+        <div id="message"></div>
+
+        <div class="buttons">
+            <button id="delete-button" disabled>Delete Selected Points</button>
+            <button id="undo-button" disabled>Undo Last Deletion</button>
+            <button id="find-peaks-button" style="display:none;">Find Peaks</button>
+            <button id="export-button" style="display:none;">Export Data</button>
+        </div>
+
+        <!-- Sliders for Peak Finder Parameters -->
+        <div id="peak-sliders" class="slider-container" style="display:none;">
+            <h3>Find Peaks Parameters</h3>
+            <div class="slider-group">
+                <label for="height">Height: <span id="height-value">0</span></label>
+                <input type="range" id="height" name="height" min="0" max="20" step="0.1" value="0">
+            </div>
+            <div class="slider-group">
+                <label for="distance">Distance: <span id="distance-value">0</span></label>
+                <input type="range" id="distance" name="distance" min="0" max="1000" step="1" value="0">
+            </div>
+            <div class="slider-group">
+                <label for="prominence">Prominence: <span id="prominence-value">0</span></label>
+                <input type="range" id="prominence" name="prominence" min="0" max="20" step="0.1" value="0">
+            </div>
+            <div class="slider-group">
+                <label for="width">Width: <span id="width-value">0</span></label>
+                <input type="range" id="width" name="width" min="0" max="1000" step="1" value="0">
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
