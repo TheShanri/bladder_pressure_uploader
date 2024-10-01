@@ -73,36 +73,34 @@ function uploadFile() {
 }
 
 // Function to plot the data using Plotly.js
+// Function to plot the data using Plotly.js
 function plotData() {
     if (!csvData || Object.keys(csvData).length === 0) {
         return;
     }
 
     const headers = Object.keys(csvData);
-    let xData, yData;
+    let xData, yPressure, yScale;
 
-    if (headers.includes('Elapsed Time') && headers.includes('Bladder Pressure')) {
+    if (headers.includes('Elapsed Time') && headers.includes('Bladder Pressure') && headers.includes('Scale')) {
         xData = csvData['Elapsed Time'];
-        yData = csvData['Bladder Pressure'];
+        yPressure = csvData['Bladder Pressure'];
+        yScale = csvData['Scale'];
     } else {
-        // If 'Elapsed Time' and 'Bladder Pressure' columns are not present, use the first two columns
-        xData = csvData[headers[0]];
-        yData = csvData[headers[1]];
+        // Handle missing columns if necessary
+        console.error('Required columns are missing in the data.');
+        return;
     }
 
-    // Prepare the data trace
-    const tracePoints = {
+    // Prepare the Bladder Pressure trace
+    const tracePressure = {
         x: xData,
-        y: yData,
+        y: yPressure,
         mode: 'lines',
-        type: 'scattergl', // Use WebGL for performance
+        type: 'scattergl',
         line: {
             color: 'green',
-            width: 1.5 // Thinner lines
-        },
-        marker: {
-            size: 4,
-            color: 'green' // Marker color
+            width: 1.5
         },
         name: 'Bladder Pressure',
         selectedpoints: selectedPoints,
@@ -119,12 +117,25 @@ function plotData() {
         }
     };
 
+    // Prepare the Scale trace
+    const traceScale = {
+        x: xData,
+        y: yScale,
+        mode: 'lines',
+        type: 'scattergl',
+        line: {
+            color: 'blue',
+            width: 1.5
+        },
+        name: 'Scale'
+    };
+
     // Vertical lines for selected points
     const selectedLines = selectedPoints.map(index => {
         const xValue = xData[index];
         return {
             x: [xValue, xValue],
-            y: [Math.min(...yData), Math.max(...yData)],
+            y: [Math.min(...yPressure, ...yScale), Math.max(...yPressure, ...yScale)],
             mode: 'lines',
             line: {
                 color: 'red',
@@ -137,12 +148,12 @@ function plotData() {
         };
     });
 
-    // Vertical lines for identified peaks
+    // Vertical lines for identified peaks (Pressure)
     const peakLines = peakIndices.map(index => {
         const xValue = xData[index];
         return {
             x: [xValue, xValue],
-            y: [Math.min(...yData), Math.max(...yData)],
+            y: [Math.min(...yPressure, ...yScale), Math.max(...yPressure, ...yScale)],
             mode: 'lines',
             line: {
                 color: 'purple',
@@ -159,7 +170,7 @@ function plotData() {
     const customKeyLines = customLines.map(line => {
         return {
             x: [line.x, line.x],
-            y: [Math.min(...yData), Math.max(...yData)],
+            y: [Math.min(...yPressure, ...yScale), Math.max(...yPressure, ...yScale)],
             mode: 'lines',
             line: {
                 color: line.color,
@@ -172,9 +183,10 @@ function plotData() {
         };
     });
 
-    const data = [tracePoints, ...selectedLines, ...peakLines, ...customKeyLines];
+    const dataPressure = [tracePressure, ...selectedLines, ...peakLines, ...customKeyLines];
+    const dataScale = [traceScale];
 
-    const layout = {
+    const layoutPressure = {
         title: 'Bladder Pressure Over Time',
         xaxis: {
             title: 'Elapsed Time (s)',
@@ -195,16 +207,48 @@ function plotData() {
         font: {
             color: 'white'
         },
-        showlegend: false // Disable the legend
+        showlegend: false
     };
 
-    // Update or create the plot
+    const layoutScale = {
+        title: 'Scale Over Time',
+        xaxis: {
+            title: 'Elapsed Time (s)',
+            color: 'white',
+            tickcolor: 'white',
+            gridcolor: 'gray',
+            zerolinecolor: 'gray'
+        },
+        yaxis: {
+            title: 'Scale',
+            color: 'white',
+            tickcolor: 'white',
+            gridcolor: 'gray',
+            zerolinecolor: 'gray'
+        },
+        plot_bgcolor: 'black',
+        paper_bgcolor: 'black',
+        font: {
+            color: 'white'
+        },
+        showlegend: false
+    };
+
+    // Update or create the Bladder Pressure plot
     if (plotInitialized) {
-        Plotly.react('graph', data, layout);
+        Plotly.react('graph', dataPressure, layoutPressure);
     } else {
-        Plotly.newPlot('graph', data, layout);
+        Plotly.newPlot('graph', dataPressure, layoutPressure);
+    }
+
+    // Update or create the Scale plot
+    if (plotInitialized) {
+        Plotly.react('graph-scale', dataScale, layoutScale);
+    } else {
+        Plotly.newPlot('graph-scale', dataScale, layoutScale);
     }
 }
+
 
 // Handle point selection logic
 function handlePointSelection(pointIndex) {
