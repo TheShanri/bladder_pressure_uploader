@@ -46,7 +46,7 @@ def upload_file():
                 df['Elapsed Time'] = pd.to_numeric(df['Elapsed Time'], errors='coerce')
                 df['Bladder Pressure'] = pd.to_numeric(df['Bladder Pressure'], errors='coerce')
                 df.dropna(subset=['Elapsed Time', 'Bladder Pressure'], inplace=True)
-                data = df[['Elapsed Time', 'Bladder Pressure']].to_dict(orient='list')
+                data = df[['Elapsed Time', 'Bladder Pressure', 'Scale']].to_dict(orient='list')
             elif file_extension == 'txt':
                 df = parse_txt_file(input_path)
                 if df.empty:
